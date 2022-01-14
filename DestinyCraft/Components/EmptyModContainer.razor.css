@@ -1,0 +1,40 @@
+﻿.build-mod-frame {
+    display: inline-block;
+    position: relative;
+    width: 4em;
+    height: 4em;
+    /*min-width: 6em;*/
+    /*min-height: 6em;*/
+    /*max-width: 6em;*/
+    /*max-height: 6em;*/
+    margin: 0px 5px;
+    border-radius: 5px;
+}
+
+.mod-frame {
+    display: inline-block;
+    position: relative;
+    width: 4em;
+    height: 4em;
+    /*min-width: 4em;*/
+    /*min-height: 4em;*/
+    /*max-width: 4em;*/
+    /*max-height: 4em;*/
+    margin: 0px 5px;
+    border-radius: 5px;
+}
+
+.mod-frame > img {
+    /* height: 5em; */
+    width: 100%;
+}
+
+.build-mod-frame > img {
+    width: 100%;
+}
+
+
+section.combat-mods-build-container > div.build-mod-frame {
+    height: 8em;
+    width: 8em;
+}

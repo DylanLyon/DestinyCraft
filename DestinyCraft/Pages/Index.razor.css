@@ -1,0 +1,200 @@
+﻿.App {
+    height: 100vh;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: row;
+    background-color: #212121;
+    height: 100vh;
+    /*padding: 0 3em;*/
+}
+
+.main-content {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.loading-container {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 10em;
+}
+
+.main-left-container {
+    height: 100%;
+    width: 30%;
+    flex-direction: column;
+    display: flex;
+    background-color: #212121;
+    margin-right: 2em;
+}
+
+.build-mod-frame > img {
+    width: 100%;
+}
+
+
+.main-right-container {
+    flex-basis: 75%;
+    /* flex-wrap: wrap; */
+    /* flex-direction: column; */
+    /* display: flex; */
+    height: 100%;
+    background-color: #212121;
+    overflow-y: auto;
+}
+
+.armor-slots-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 1em;
+    background-color: #212121;
+}
+
+.bonus-display-container {
+    display: flex;
+    width: 100%;
+    flex-basis: 20%;
+    background-color: #212121;
+    flex-direction: column;
+    color: #fffffff0;
+    margin-top: 2rem;
+}
+
+
+.mod-category-title {
+    font-family: system-ui;
+    color: #eaeaea;
+    font-size: 2em;
+    margin: 0px;
+    margin-bottom: 5px;
+    margin-left: 1em;
+}
+
+.selected-mod {
+    box-shadow: 0px 0px 11px 1px gold;
+}
+
+
+.armor-frame {
+    display: flex;
+    position: relative;
+    flex-basis: 20%;
+    /* margin: 1em; */
+    /* background-color: gold; */
+    /* border-top: 1px solid #ffffff59; */
+    /* margin-bottom: .5em; */
+    padding-top: .5em;
+    width: 50%;
+    min-height: 4em;
+}
+
+.armor-title {
+    margin: 0px;
+    font-weight: 500;
+    color: #eaeaea;
+    font-size: 1.5em;
+    line-height: 1.7;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.mod-categories {
+    display: flex;
+    flex-direction: row;
+}
+
+.mod-sub-title {
+    font-family: system-ui;
+    color: #eaeaeaf0;
+    font-size: 1em;
+    margin: 0px;
+    margin-bottom: 5px;
+    margin-left: 1em;
+}
+
+.armor-categories {
+    display: flex;
+    flex-direction: row;
+}
+
+.mod-category {
+    flex-basis: 33%;
+}
+
+.armor-slots {
+    display: flex;
+    border-top: 1px solid #ffffff59;
+    flex-direction: row;
+}
+
+.armor-slot {
+    width: 20%;
+}
+
+
+.mod-tip-anchor {
+    height: 4em;
+    width: 4em;
+    display: inline-block;
+    position: relative;
+    margin: 5px;
+}
+
+.primary-category {
+    width: 33%;
+}
+
+.secondary-mods {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
+
+.secondary-armor {
+    display: flex;
+    flex-direction: column;
+    width: 20%;
+}
+
+.mod-info {
+    color: white;
+}
+
+.mod-info-frame {
+    min-height: 6em;
+}
+
+.mod-info-title {
+    font-size: 1.5rem;
+}
+
+.perk-negative {
+    color: red;
+    font-size: initial;
+    vertical-align: text-bottom;
+    margin-left: 1em;
+}
+
+.perk-positive {
+    color: #00ad00;
+    font-size: initial;
+    vertical-align: text-bottom;
+    margin-left: 1em;
+}
+
+.solar-color {
+    color: #f36f26;
+}
+.arc-color {
+    color: #44f3ff;
+}
+.void-color {
+    color: #b082cb;
+}
+.stasis-color {
+    color: #4e87ff;
+}
+.universal-color {
+    color: #7e7e7e;;
+}

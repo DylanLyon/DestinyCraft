@@ -1,0 +1,37 @@
+﻿.build-mod-frame {
+    display: inline-block;
+    position: relative;
+    width: 6em;
+    height: 6em;
+    margin: 0px 5px;
+    border-radius: 5px;
+}
+
+.solar-background {
+    background-color: #f36f26;
+}
+.arc-background {
+    background-color: #44f3ff;
+}
+.void-background {
+    background-color: #b082cb;
+}
+.stasis-background {
+    background-color: #4e87ff;
+}
+.universal-background {
+    background-color: #7e7e7e;;
+}
+
+.combat-mods-build-container > .build-mod-frame {
+    width: 8em;
+    height: 8em;
+}
+
+.build-mod-frame > img {
+    width: 100%;
+}
+
+.build-mod-frame > img {
+    width: 100%;
+}

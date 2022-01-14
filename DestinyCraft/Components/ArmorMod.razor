@@ -1,0 +1,26 @@
+﻿
+
+@if (View == "compact")
+{
+    <div
+        class=@("mod-frame " + Element + "-background " + (ArtifactMods.Contains(Mod.Hash.ToString()) ? "seasonal-mod-background" : "") + (!ModDataModel.tags.Intersect(ActiveTags).Any() && ActiveTags.Count >= 1 ? " faded-out-mod" : ""))
+        @onclick="@(() => HandleModSelect.InvokeAsync((Mod, "secondary")))" 
+        @onmouseover="@(() => OnHover.InvokeAsync(Mod))"
+    >
+    <img class="" src=@("http://bungie.net/" + Mod.DisplayProperties.Icon) />
+        <div class="mod-cost-frame">@Mod.Plug.EnergyCost.EnergyCost</div>
+    </div>
+} else if (View == "detailed")
+{
+    <div class=@("detailed-mod-frame " + (!ModDataModel.tags.Intersect(ActiveTags).Any() && ActiveTags.Count >= 1 ? " faded-out-mod" : ""))>
+        <div class=@("mod-frame-detailed " + Element + "-background " + (ArtifactMods.Contains(Mod.Hash.ToString()) ? "seasonal-mod-background" : "")) @onclick="@(() => HandleModSelect.InvokeAsync((Mod, "secondary")))" @onmouseover="@(() => OnHover.InvokeAsync(Mod))">
+            <img class="mod-image-detailed" src=@("http://bungie.net/" + Mod.DisplayProperties.Icon) />
+            @* <div class="mod-cost-frame">@Mod.Plug.EnergyCost.EnergyCost</div> *@
+        </div>
+        <div class="mod-details-frame">
+            <span>@Mod.DisplayProperties.Name</span>
+            <span>@Mod.DisplayProperties.Description</span>
+        </div>
+    </div>
+}
+

@@ -1,0 +1,90 @@
+﻿.main-right-container .mod-frame {
+    margin: 5px;
+}
+
+.mod-cost-frame {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    background-color: #343434;
+    border-radius: 0px;
+    border-bottom-left-radius: 5px;
+    color: white;
+    padding: 0px 3px;
+    line-height: normal;
+}
+
+.mod-frame {
+    display: inline-block;
+    position: relative;
+    width: 4em;
+    height: 4em;
+    /*min-width: 4em;*/
+    /*min-height: 4em;*/
+    /*max-width: 4em;*/
+    /*max-height: 4em;*/
+    margin: 0px 5px;
+    border-radius: 5px;
+}
+
+
+.mod-frame.large {
+    width: 7em;
+    height: 7em;
+}
+
+.mod-frame > img {
+    /* height: 5em; */
+    width: 100%;
+}
+
+.mod-frame > img.large-mod {
+    height: 7em;
+}
+
+.solar-background {
+    background-color: #f36f26;
+}
+.arc-background {
+    background-color: #44f3ff;
+}
+.void-background {
+    background-color: #b082cb;
+}
+.stasis-background {
+    background-color: #4e87ff;
+}
+.universal-background {
+    background-color: #7e7e7e;;
+}
+div.seasonal-mod-background {
+    background-color: #009595;
+}
+
+.detailed-mod-frame {
+    flex-direction: row;
+    color: white;
+    padding: 0.25em;
+    width: 50%;
+    display: inline-block;
+}
+
+.mod-details-frame {
+    display: inline-block;
+}
+
+.mod-frame-detailed {
+    max-width: 3em;
+    max-height: 3em;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.mod-image-detailed {
+    max-width: 3em;
+    max-height: 3em;
+}
+
+.faded-out-mod {
+    opacity: 0.2;
+}

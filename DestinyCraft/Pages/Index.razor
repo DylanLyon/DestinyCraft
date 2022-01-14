@@ -1,0 +1,591 @@
+﻿@inject IIndexViewModel _viewModel;
+@using DestinyCraft.ViewModels
+@using DestinyCraft.Components
+@page "/"
+@using System.Linq;
+@using System.Net
+@using BungieSharper.Client
+@using BungieSharper.Entities.Destiny.Definitions
+@using BungieSharper.Entities.Destiny.Definitions.Artifacts
+@using DestinyCraft.EventModels
+@using DestinyCraft.Models
+@using DestinyCraft.Utilities
+@using DotNetBungieAPI
+@using DotNetBungieAPI.Clients
+@using Newtonsoft.Json
+
+@* @inject BungieApiClient _client *@
+@inject HttpClient _client;
+
+
+
+<div class="main-container">
+
+@if (_viewModel.Loading)
+{
+    <div class="loading-container">Loading...</div>
+}
+else
+{
+    <div class="main-left-container">
+        
+        <div class="armor-slots-container">
+
+
+
+
+            <CombatMods Mods="@SelectedCombatMods"/>
+
+            <section class="secondary-mods">
+
+                <section class="secondary-armor">
+                    <h5 class="armor-title">Helmet</h5>
+                    <section class="armor-slots">
+                        <SecondaryMods Mods="@SelectedHelmetMods"/>
+                    </section>
+                </section>
+
+                <section class="secondary-armor">
+                    <h5 class="armor-title">Arms</h5>
+                    <section class="armor-slots">
+                        <SecondaryMods Mods="@SelectedArmMods"/>
+                    </section>
+                </section>
+
+                <section class="secondary-armor">
+                    <h5 class="armor-title">Chest</h5>
+                    <section class="armor-slots">
+                        <SecondaryMods Mods="@SelectedChestMods"/>
+                    </section>
+                </section>
+
+                <section class="secondary-armor">
+                    <h5 class="armor-title">Legs</h5>
+                    <section class="armor-slots">
+                        <SecondaryMods Mods="@SelectedLegMods"/>
+                    </section>
+                </section>
+
+                <section class="secondary-armor">
+                    <h5 class="armor-title">Class Item</h5>
+                    <section class="armor-slots">
+                        <SecondaryMods Mods="@SelectedClassMods"/>
+                    </section>
+                </section>
+
+            </section>
+
+        </div>
+
+
+        <div>
+            @foreach (var Mod in SelectedCombatMods)
+            {
+                <ElementCostTracker CombatMod="@Mod"/>
+            }
+        </div>
+
+
+        <div class="bonus-display-container">
+            <h5 class="mod-category-title">Summary</h5>
+
+            @* <ModSummary mods={activeMods} /> *@
+
+        </div>
+
+
+
+
+    </div>
+
+    <div class="main-right-container">
+        <button @onclick="@ToggleView">Toggle View</button>
+            
+        <button @onclick="@(() => ToggleTag("grenade"))">Grenade</button>
+        <button @onclick="@(() => ToggleTag("melee"))">Melee</button>
+        <button @onclick="@(() => ToggleTag("class"))">Class Ability</button>
+        <button @onclick="@(() => ToggleTag("survive"))">Survivability</button>
+        <button @onclick="@(() => ToggleTag("super"))">Super Energy</button>
+        <button @onclick="@(() => ToggleTag("finisher"))">Finisher</button>
+        <button @onclick="@(() => ToggleTag("ammo"))">Ammo</button>
+            
+        <div class="mod-info-frame">
+            @if (HoveredMod is not null)
+            {
+                <div class="mod-info">
+                    <div class=@("mod-info-title " +
+                                 (HoveredMod.ModData.Plug.EnergyCost.EnergyTypeHash.ToString() == "728351493" ? "arc-color " : "") + // arc
+                                 (HoveredMod.ModData.Plug.EnergyCost.EnergyTypeHash.ToString() == "591714140" ? "solar-color " : "") + // solar
+                                 (HoveredMod.ModData.Plug.EnergyCost.EnergyTypeHash.ToString() == "4069572561" ? "void-color " : "") + // void
+                                 (HoveredMod.ModData.Plug.EnergyCost.EnergyTypeHash.ToString() == "1819698290" ? "stasis-color " : "") // stasis
+                                   )>
+                        @HoveredMod.ModData.DisplayProperties.Name
+                        @foreach (var perk in @HoveredMod.PerkData.Where(perk => perk.Contains("▼") || perk.Contains("▲")))
+                        {
+                            <span class=@("perk-info " + (perk.Contains("▼") ? "perk-negative" : "") + (perk.Contains("▲") ? "perk-positive" : ""))>
+                                @perk
+                            </span>
+                        }
+                        <span></span>
+                    </div>
+                    @foreach (var perk in @HoveredMod.PerkData.Where(perk => !perk.Contains("▼") && !perk.Contains("▲")))
+                    {
+                        <div class="perk-info">
+                            @perk
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+            
+            
+        <h5 class="mod-category-title">Universal Mods</h5>
+
+        <div class="mod-categories">
+            <section class="primary-category">
+                <h5 class="mod-sub-title">Elemental Wells</h5>
+                @foreach (var mod in _viewModel.Mods.Where(mod => mod.Value.ItemTypeDisplayName == "Elemental Well Mod"))
+                {
+                    <ArmorMod
+                        Mod="@mod.Value"
+                        HandleModSelect="@((args) => HandleModSelect(args.Item1, "primary"))"
+                        View="@View"
+                        ActiveTags="@ActiveTags"
+                        ModDataModel="@ModDataModels[mod.Value.Hash.ToString()]"
+                        OnHover="@OnHandleHover"
+                        ArtifactMods="@_viewModel.ArtifactMods"
+                    />
+                }
+                <EmptyModContainer HandleModSelect="@((args) => HandleModSelect(null, "emptyPrimary"))" Type="Bucket" />
+            </section>
+            <section class="primary-category">
+                <h5 class="mod-sub-title">Charged with Light</h5>
+                @foreach (var mod in _viewModel.Mods.Where(mod => mod.Value.ItemTypeDisplayName == "Charged with Light Mod"))
+                {
+                    <ArmorMod 
+                        Mod="@mod.Value" 
+                        OnHover="@OnHandleHover" 
+                        HandleModSelect="@((args) => HandleModSelect(args.Item1, "primary"))"  
+                        View="@View" 
+                        ActiveTags="@ActiveTags" 
+                        ModDataModel="@ModDataModels[mod.Value.Hash.ToString()]"
+                        ArtifactMods="@_viewModel.ArtifactMods"
+                    />
+                }
+                <EmptyModContainer HandleModSelect="@((args) => HandleModSelect(null, "emptyPrimary"))" Type="Bucket" />
+
+            </section>
+            <section class="primary-category">
+                <h5 class="mod-sub-title">Warmind Cells</h5>
+                @foreach (var mod in _viewModel.Mods.Where(mod => mod.Value.ItemTypeDisplayName == "Warmind Cell Mod"))
+                {
+                    <ArmorMod 
+                        Mod="@mod.Value" 
+                        OnHover="@OnHandleHover" 
+                        HandleModSelect="@((args) => HandleModSelect(args.Item1, "primary"))"  
+                        View="@View" 
+                        ActiveTags="@ActiveTags" 
+                        ModDataModel="@ModDataModels[mod.Value.Hash.ToString()]"
+                        ArtifactMods="@_viewModel.ArtifactMods"
+                    />
+                }
+                <EmptyModContainer HandleModSelect="@((args) => HandleModSelect(null, "emptyPrimary"))" Type="Bucket" />
+
+            </section>
+        </div>
+
+        <div class="armor-categories">
+
+            <section class="armor-slot">
+                <h5 class="mod-category-title">Helmet Mods</h5>
+                @foreach (var mod in _viewModel.Mods.Where(mod => mod.Value.ItemCategoryHashes.Contains<uint>(1362265421)))
+                {
+                    <ArmorMod 
+                        Mod="@mod.Value" 
+                        OnHover="@OnHandleHover" 
+                        HandleModSelect="@((args) => HandleModSelect(args.Item1, args.Item2))" 
+                        View="@View" 
+                        ActiveTags="@ActiveTags" 
+                        ModDataModel="@ModDataModels[mod.Value.Hash.ToString()]"
+                        ArtifactMods="@_viewModel.ArtifactMods"
+                    />
+                }
+                <EmptyModContainer HandleModSelect="@((args) => HandleModSelect(null, "emptyHelm"))" Type="Bucket" />
+
+            </section>
+
+            <section class="armor-slot">
+                <h5 class="mod-category-title">Arm Mods</h5>
+                @foreach (var mod in _viewModel.Mods.Where(mod => mod.Value.ItemCategoryHashes.Contains(3872696960)))
+                {
+                    <ArmorMod 
+                        Mod="@mod.Value" 
+                        OnHover="@OnHandleHover" 
+                        HandleModSelect="@((args) => HandleModSelect(args.Item1, args.Item2))" 
+                        View="@View" 
+                        ActiveTags="@ActiveTags" 
+                        ModDataModel="@ModDataModels[mod.Value.Hash.ToString()]"
+                        ArtifactMods="@_viewModel.ArtifactMods"
+                    />
+                }
+                <EmptyModContainer HandleModSelect="@((args) => HandleModSelect(null, "emptyArm"))" Type="Bucket" />
+
+            </section>
+
+            <section class="armor-slot">
+                <h5 class="mod-category-title">Chest Mods</h5>
+                @foreach (var mod in _viewModel.Mods.Where(mod => mod.Value.ItemCategoryHashes.Contains(3723676689)))
+                {
+                    <ArmorMod 
+                        Mod="@mod.Value" OnHover="@OnHandleHover" 
+                        HandleModSelect="@((args) => HandleModSelect(args.Item1, args.Item2))" 
+                        View="@View" 
+                        ActiveTags="@ActiveTags" 
+                        ModDataModel="@ModDataModels[mod.Value.Hash.ToString()]"
+                        ArtifactMods="@_viewModel.ArtifactMods"
+                    />
+                }
+                <EmptyModContainer HandleModSelect="@((args) => HandleModSelect(null, "emptyChest"))" Type="Bucket" />
+
+            </section>
+
+            <section class="armor-slot">
+                <h5 class="mod-category-title">Leg Mods</h5>
+                @foreach (var mod in _viewModel.Mods.Where(mod => mod.Value.ItemCategoryHashes.Contains(3607371986)))
+                {
+                    <ArmorMod 
+                        Mod="@mod.Value" OnHover="@OnHandleHover" 
+                        HandleModSelect="@((args) => HandleModSelect(args.Item1, args.Item2))" 
+                        View="@View" 
+                        ActiveTags="@ActiveTags" 
+                        ModDataModel="@ModDataModels[mod.Value.Hash.ToString()]"
+                        ArtifactMods="@_viewModel.ArtifactMods"
+                    />
+                }
+                <EmptyModContainer HandleModSelect="@((args) => HandleModSelect(null, "emptyLeg"))" Type="Bucket" />
+
+            </section>
+
+            <section class="armor-slot">
+                <h5 class="mod-category-title">Class Item Mods</h5>
+                @foreach (var mod in _viewModel.Mods.Where(mod => mod.Value.ItemCategoryHashes.Contains(3196106184)))
+                {
+                    <ArmorMod 
+                        Mod="@mod.Value" 
+                        OnHover="@OnHandleHover" 
+                        HandleModSelect="@((args) => HandleModSelect(args.Item1, args.Item2))" 
+                        View="@View" 
+                        ActiveTags="@ActiveTags" 
+                        ModDataModel="@ModDataModels[mod.Value.Hash.ToString()]"
+                        ArtifactMods="@_viewModel.ArtifactMods"
+                    />
+                }
+                <EmptyModContainer HandleModSelect="@((args) => HandleModSelect(null, "emptyClass"))" Type="Bucket" />
+
+            </section>
+
+        </div>
+    </div>
+}
+
+</div>
+
+@code {
+
+    public List<DestinyInventoryItemDefinition> SelectedCombatMods { get; set; } = new ();
+    public List<DestinyInventoryItemDefinition> SelectedHelmetMods { get; set; } = new ();
+    public List<DestinyInventoryItemDefinition> SelectedArmMods { get; set; } = new ();
+    public List<DestinyInventoryItemDefinition> SelectedChestMods { get; set; } = new ();
+    public List<DestinyInventoryItemDefinition> SelectedLegMods { get; set; } = new ();
+    public List<DestinyInventoryItemDefinition> SelectedClassMods { get; set; } = new ();
+    public string View { get; set; } = "compact";
+    public List<string> CoreTypes = new List<string>();
+    public List<string> ActiveTags = new List<string>();
+    private string[] _elementDisplayOrderHashes = { "1198124803", "591714140", "1819698290", "4069572561", "728351493"};
+    public Dictionary<string, ModDataModel>? ModDataModels = new Dictionary<string, ModDataModel>();
+    
+    
+    
+    private BungieClientConfig _apiConfig;
+
+    
+    
+
+    public ModInfo? HoveredMod { get; set; } = null;
+
+    public void OnHandleHover(DestinyInventoryItemDefinition mod)
+    {
+        Console.WriteLine("Mod: {0}", mod.DisplayProperties.Name);
+        var perks = new List<string>();
+        foreach (var perk in mod.Perks)
+        {
+            var info = _viewModel.PerkData[perk.PerkHash.ToString()];
+            if (info.DisplayProperties.Description is not null && !perks.Contains(info.DisplayProperties.Description))
+            {
+                perks.Add(info.DisplayProperties.Description);
+                // Console.WriteLine("Perk: {0}", info);
+            }
+        }
+        
+        HoveredMod = new ModInfo(mod, perks);
+        StateHasChanged();
+    }
+
+    public void HandleModSelect(DestinyInventoryItemDefinition? mod, string type)
+    {
+        GetElementFromHash getElement = new();
+        if (type == "primary")
+        {
+            if (SelectedCombatMods.Count < 5)
+            {
+                SelectedCombatMods.Add(mod);
+                CoreTypes.Add(getElement.GetElementFromString(mod.Plug.EnergyCost.EnergyTypeHash.ToString()));
+            }
+            else
+            {
+                SelectedCombatMods.RemoveAt(4);
+                SelectedCombatMods.Insert(0, mod);
+                CoreTypes.RemoveAt(4);
+                CoreTypes.Insert(0, getElement.GetElementFromString(mod.Plug.EnergyCost.EnergyTypeHash.ToString()));
+            }
+        }
+        else if (type == "secondary")
+        {
+
+            if (mod.ItemCategoryHashes.Contains<uint>(1362265421)) // Helm
+            {
+                if (SelectedHelmetMods.Count < 2)
+                    SelectedHelmetMods.Add(mod);
+                else
+                {
+                    SelectedHelmetMods.RemoveAt(1);
+                    SelectedHelmetMods.Insert(0, mod);
+                }
+            }
+            else if (mod.ItemCategoryHashes.Contains(3872696960)) // Arms
+            {
+                if (SelectedArmMods.Count < 2)
+                    SelectedArmMods.Add(mod);
+                else
+                {
+                    SelectedArmMods.RemoveAt(1);
+                    SelectedArmMods.Insert(0, mod);
+                }
+            }
+            else if (mod.ItemCategoryHashes.Contains(3723676689)) // Chest
+            {
+                if (SelectedChestMods.Count < 2)
+                    SelectedChestMods.Add(mod);
+                else
+                {
+                    SelectedChestMods.RemoveAt(1);
+                    SelectedChestMods.Insert(0, mod);
+                }
+            }
+            else if (mod.ItemCategoryHashes.Contains(3607371986)) // Legs
+            {
+                if (SelectedLegMods.Count < 2)
+                    SelectedLegMods.Add(mod);
+                else
+                {
+                    SelectedLegMods.RemoveAt(1);
+                    SelectedLegMods.Insert(0, mod);
+                }
+            }
+            else if (mod.ItemCategoryHashes.Contains(3196106184)) // Class
+            {
+                if (SelectedClassMods.Count < 2)
+                    SelectedClassMods.Add(mod);
+                else
+                {
+                    SelectedClassMods.RemoveAt(1);
+                    SelectedClassMods.Insert(0, mod);
+                }
+            }
+        }
+        else if (type == "emptyPrimary")
+        {
+            if (SelectedCombatMods.Count >= 1)
+            {
+                SelectedCombatMods.RemoveAt(SelectedCombatMods.Count - 1);
+                CoreTypes.RemoveAt(CoreTypes.Count - 1);
+                // CoreTypes.Insert(0, getElement.GetElementFromString(mod.Plug.EnergyCost.EnergyTypeHash.ToString()));
+            }
+        }
+        else if (type == "emptyHelm")
+        {
+            if (SelectedHelmetMods.Count >= 1)
+                SelectedHelmetMods.RemoveAt(SelectedHelmetMods.Count - 1);
+        }
+        else if (type == "emptyArm")
+        {
+            if (SelectedArmMods.Count >= 1)
+                SelectedArmMods.RemoveAt(SelectedArmMods.Count - 1);
+        }
+        else if (type == "emptyChest")
+        {
+            if (SelectedChestMods.Count >= 1)
+                SelectedChestMods.RemoveAt(SelectedChestMods.Count - 1);
+        }
+        else if (type == "emptyLeg")
+        {
+            if (SelectedLegMods.Count >= 1)
+                SelectedLegMods.RemoveAt(SelectedLegMods.Count - 1);
+        }
+        else if (type == "emptyClass")
+        {
+            if (SelectedClassMods.Count >= 1)
+                SelectedClassMods.RemoveAt(SelectedClassMods.Count - 1);
+        }
+    }
+
+    public void ToggleView()
+    {
+        if (View == "compact")
+        {
+            View = "detailed";
+        }
+        else
+        {
+            View = "compact";
+        }
+        StateHasChanged();
+    }
+
+    public void ToggleTag(string tag)
+    {
+        if (ActiveTags.Contains(tag))
+            ActiveTags.Remove(ActiveTags.Single(t => t == tag));
+        else
+            ActiveTags.Add(tag);
+        
+        StateHasChanged();
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        // string jsonString = File.ReadAllText("/ModData.json");
+        string jsonString = await _client.GetStringAsync("data/ModData.json");
+        // string jsonString = await _client.GetJsonAsync<Dictionary<string, ModDataModel>>("sample-data/weather.json");
+        ModDataModels = JsonConvert.DeserializeObject<Dictionary<string, ModDataModel>>(jsonString);
+        
+        Console.WriteLine("Factory Created");
+        // _apiConfig = new BungieClientConfig();
+        // _apiConfig.ApiKey = "02920a8d5c614cc992a23c348e07bf9e";
+        // _apiConfig.OAuthClientId = 38045;
+        // _client = new BungieApiClient(_apiConfig);
+        _client = new HttpClient();
+        _client.DefaultRequestHeaders.Add("X-API-Key", "02920a8d5c614cc992a23c348e07bf9e");
+
+        GetManifest(_client);
+        
+        _viewModel.PropertyChanged += async (sender, e) => { 
+            await InvokeAsync(StateHasChanged);
+        };
+        // _viewModel.OnInitialization();
+        
+        
+        
+        // return base.OnInitializedAsync();
+    }
+    
+    public async void GetManifest(HttpClient client)
+    {
+        var response = await client.GetAsync("https://www.bungie.net/platform/Destiny2/Manifest");
+        // var result = await _client.Api.Destiny2_GetDestinyManifest();
+        var content = await response.Content.ReadAsStringAsync();
+        Console.WriteLine("content {0}", content);
+        dynamic manifest = Newtonsoft.Json.JsonConvert.DeserializeObject(content);
+        
+        Console.WriteLine("item {0}", manifest.Response.jsonWorldComponentContentPaths.en.DestinyInventoryItemDefinition);
+        //
+        var modPath = manifest.Response.jsonWorldComponentContentPaths.en.DestinyInventoryItemDefinition;
+        // var modPath = result.JsonWorldComponentContentPaths["en"]["DestinyInventoryItemDefinition"];
+        var sandboxPath = manifest.Response.jsonWorldComponentContentPaths.en.DestinySandboxPerkDefinition;
+        // var sandboxPath = result.JsonWorldComponentContentPaths["en"]["DestinySandboxPerkDefinition"];
+        var artifactPath = manifest.Response.jsonWorldComponentContentPaths.en.DestinyArtifactDefinition;
+        // var artifactPath = result.JsonWorldComponentContentPaths["en"]["DestinyArtifactDefinition"];
+        string modString = await (new HttpClient()).GetStringAsync("https://www.bungie.net" + modPath.ToString());
+        // string modString = (new HttpClient()).DownloadString("https://www.bungie.net" + modPath);
+        string sandboxString = await (new HttpClient()).GetStringAsync("https://www.bungie.net" + sandboxPath.ToString());
+        // string sandboxString = (new WebClient()).DownloadString("https://www.bungie.net" + sandboxPath);
+        string artifactString = await (new HttpClient()).GetStringAsync("https://www.bungie.net" + artifactPath.ToString());
+        // string artifactString = (new WebClient()).DownloadString("https://www.bungie.net" + artifactPath);
+        
+        
+        
+        var modData = JsonConvert.DeserializeObject<Dictionary<string, DestinyInventoryItemDefinition>>(modString);
+        var sandboxData = JsonConvert.DeserializeObject<Dictionary<string, DestinySandboxPerkDefinition>>(sandboxString);
+        var artifactData = JsonConvert.DeserializeObject<Dictionary<string, DestinyArtifactDefinition>>(artifactString);
+        Console.WriteLine("Count: {0}", modData.Count);
+        
+        var seasonalMods = new List<string>();
+        foreach (var destinyArtifactDefinition in artifactData)
+        {
+            foreach (var destinyArtifactTierDefinition in destinyArtifactDefinition.Value.Tiers)
+            {
+                foreach (var destinyArtifactTierItemDefinition in destinyArtifactTierDefinition.Items)
+                {
+                    seasonalMods.Add(destinyArtifactTierItemDefinition.ItemHash.ToString());
+                }
+            }
+        }
+        
+        Dictionary<string, DestinyInventoryItemDefinition> Mods = new ();
+        
+        foreach (var (key, destinyInventoryItemDefinition) in modData)
+        {
+            if (!modData.TryGetValue(key, out var item)) continue;
+            try
+            {
+                IEnumerable<uint>? categoryHashes = item.ItemCategoryHashes;
+                if (
+                    categoryHashes.Contains(4104513227) &&
+                    !item.Plug.EnergyCost.Equals(0) &&
+                    !item.DisplayProperties.Description.Contains("deprecated") &&
+                    !item.DisplayProperties.Name.Contains("Scavenger") &&
+                    !item.DisplayProperties.Name.Contains("Unflinching") &&
+                    !item.DisplayProperties.Name.Contains("Targeting") &&
+                    !item.DisplayProperties.Name.Contains("Loader") &&
+                    !item.DisplayProperties.Name.Contains("Reloader") &&
+                    !item.DisplayProperties.Name.Contains("Finder") &&
+                    !item.DisplayProperties.Name.Contains("Holster") &&
+                    (!item.DisplayProperties.Name.Contains("Reserves") || item.DisplayProperties.Name == "Extra Reserves") &&
+                    !item.DisplayProperties.Name.Contains("Dexterity") &&
+                    !item.DisplayProperties.Name.Contains("Strength") &&
+                    !item.DisplayProperties.Name.Contains("Discipline") &&
+                    !item.DisplayProperties.Name.Contains("Intellect") &&
+                    !item.DisplayProperties.Name.Contains("Mobility") &&
+                    !item.DisplayProperties.Name.Contains("Resilience") &&
+                    !item.DisplayProperties.Name.Contains("Recovery") &&
+                    !item.DisplayProperties.Name.Contains("Empty Mod Socket") &&
+                    !item.ItemTypeDisplayName.Contains("Last Wish Raid Mod")  &&
+                    !item.ItemTypeDisplayName.Contains("Vault of Glass Armor Mod")  &&
+                    !item.ItemTypeDisplayName.Contains("Deep Stone Crypt Raid Mod")  &&
+                    !item.ItemTypeDisplayName.Contains("Garden of Salvation Raid Mod")  &&
+                    !item.ItemTypeDisplayName.Contains("Nightmare Mod")
+                    )
+                {
+                    Mods.Add(key, destinyInventoryItemDefinition);
+                }
+        
+            }
+            catch (Exception e)
+            {
+                // Console.WriteLine("Faulty Key: {0}", key);
+            }
+        }
+        
+        foreach (var mod in Mods)
+        {
+            Console.WriteLine("Mod: {0} {1}", mod.Value.DisplayProperties.Name, mod.Value.Hash);
+        }
+        Console.WriteLine("Filter Count: {0}", Mods.Count);
+        
+        SandboxData returnData = new SandboxData(sandboxData, seasonalMods);
+        
+        _viewModel._Loaded(this, new LoadedArgs(Mods, returnData));
+        // Loaded?.Invoke(this, new LoadedArgs(Mods, returnData));
+        // Loaded?.Invoke(this, EventArgs.Empty);
+    }
+}

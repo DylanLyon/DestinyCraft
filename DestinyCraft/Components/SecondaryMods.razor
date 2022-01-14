@@ -1,0 +1,34 @@
+﻿@using BungieSharper.Entities.Destiny.Definitions
+
+@* <section class="secondary-mods-build-container"> *@
+    @if (Mods.Count >= 1)
+    {
+        <CombatModContainer Mod="Mods.ElementAt(0)" />
+    }
+    else
+    {
+        <EmptyModContainer />
+    }
+    @if (Mods.Count >= 2)
+    {
+        <CombatModContainer Mod="Mods.ElementAt(1)" />
+    }
+    else
+    {
+        <EmptyModContainer />
+    }
+@* </section> *@
+
+<style>
+    .secondary-mods-build-container {
+        display: flex;
+        flex-direction: row;
+    }
+    
+</style>
+
+
+@code {
+    [Parameter]
+    public List<DestinyInventoryItemDefinition> Mods { get; set; } = new();
+}

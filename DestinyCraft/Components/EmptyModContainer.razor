@@ -1,0 +1,25 @@
+﻿@using BungieSharper.Entities.Destiny.Definitions
+
+
+@if (Type == "Build")
+{
+    <div class=@("build-mod-frame ")>
+        <img class="" src=@("https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png") />
+        @* <div class="mod-cost-frame">@Mod.Plug.EnergyCost.EnergyCost</div> *@
+    </div>
+}
+else if (Type == "Bucket")
+{
+    <div class=@("mod-frame ") @onclick="@(() => HandleModSelect.InvokeAsync((null, "empty")))">
+        <img class="" src=@("https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png") />
+        @* <div class="mod-cost-frame">@Mod.Plug.EnergyCost.EnergyCost</div> *@
+    </div>
+}
+
+
+@code {
+
+    [Parameter] public string Type { get; set; } = "Build";
+    [Parameter] public EventCallback<(DestinyInventoryItemDefinition, string)> HandleModSelect { get; set; }
+    
+}

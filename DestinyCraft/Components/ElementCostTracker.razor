@@ -1,0 +1,44 @@
+﻿@using BungieSharper.Entities.Destiny.Definitions
+@using DestinyCraft.Utilities
+
+<div class="element-title">
+    <div class="energy-bar">
+        
+        @for (var i = 0; i < _currentCost; i++)
+        {
+            <div class=@("energy-pip " + Element + "-background")></div>
+        }
+        @for (var i = 0; i < _remainingCost; i++)
+        {
+            <div class=@("energy-pip")></div>
+        }
+    </div>
+</div>
+
+<style>
+    .element-title {
+        color: white;
+    }
+</style>
+
+@code {
+    // [Parameter] public string Element { get; set; }
+    [Parameter] public DestinyInventoryItemDefinition CombatMod { get; set; }
+    public int _currentCost { get; set; } = 0;
+    public int _remainingCost { get; set; } = 10;
+    public string Element { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        // _currentCost = 0;
+        _currentCost = CombatMod.Plug.EnergyCost.EnergyCost;
+        _remainingCost = 10 - _currentCost;
+        GetElementFromHash getElement = new ();
+        Element = getElement.GetElementFromString(CombatMod.Plug.EnergyCost.EnergyTypeHash.ToString());
+        StateHasChanged();
+        
+        base.OnParametersSet();
+    }
+
+
+}
