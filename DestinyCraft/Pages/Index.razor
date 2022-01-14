@@ -491,13 +491,17 @@ else
     
     public async void GetManifest(HttpClient client)
     {
+        Console.WriteLine("Request Manifest");
+
         var response = await client.GetAsync("https://www.bungie.net/platform/Destiny2/Manifest");
         // var result = await _client.Api.Destiny2_GetDestinyManifest();
         var content = await response.Content.ReadAsStringAsync();
-        Console.WriteLine("content {0}", content);
+        // Console.WriteLine("content {0}", content);
         dynamic manifest = Newtonsoft.Json.JsonConvert.DeserializeObject(content);
         
-        Console.WriteLine("item {0}", manifest.Response.jsonWorldComponentContentPaths.en.DestinyInventoryItemDefinition);
+        Console.WriteLine("Manifest Start");
+        
+        // Console.WriteLine("item {0}", manifest.Response.jsonWorldComponentContentPaths.en.DestinyInventoryItemDefinition);
         //
         var modPath = manifest.Response.jsonWorldComponentContentPaths.en.DestinyInventoryItemDefinition;
         // var modPath = result.JsonWorldComponentContentPaths["en"]["DestinyInventoryItemDefinition"];
@@ -511,13 +515,18 @@ else
         // string sandboxString = (new WebClient()).DownloadString("https://www.bungie.net" + sandboxPath);
         string artifactString = await (new HttpClient()).GetStringAsync("https://www.bungie.net" + artifactPath.ToString());
         // string artifactString = (new WebClient()).DownloadString("https://www.bungie.net" + artifactPath);
-        
+        Console.WriteLine("Manifest Downloaded");
+
         
         
         var modData = JsonConvert.DeserializeObject<Dictionary<string, DestinyInventoryItemDefinition>>(modString);
+        Console.WriteLine("Mod Data Deserialized");
+
         var sandboxData = JsonConvert.DeserializeObject<Dictionary<string, DestinySandboxPerkDefinition>>(sandboxString);
+        Console.WriteLine("Sandbox Data Deserialized");
+
         var artifactData = JsonConvert.DeserializeObject<Dictionary<string, DestinyArtifactDefinition>>(artifactString);
-        Console.WriteLine("Count: {0}", modData.Count);
+        Console.WriteLine("Artifact Data Deserialized");
         
         var seasonalMods = new List<string>();
         foreach (var destinyArtifactDefinition in artifactData)
@@ -530,6 +539,8 @@ else
                 }
             }
         }
+        Console.WriteLine("Artifact Mods Grouped");
+
         
         Dictionary<string, DestinyInventoryItemDefinition> Mods = new ();
         
@@ -575,12 +586,14 @@ else
                 // Console.WriteLine("Faulty Key: {0}", key);
             }
         }
+        Console.WriteLine("Mods Grouped");
+
         
         foreach (var mod in Mods)
         {
-            Console.WriteLine("Mod: {0} {1}", mod.Value.DisplayProperties.Name, mod.Value.Hash);
+            // Console.WriteLine("Mod: {0} {1}", mod.Value.DisplayProperties.Name, mod.Value.Hash);
         }
-        Console.WriteLine("Filter Count: {0}", Mods.Count);
+        Console.WriteLine("Mod Count: {0}", Mods.Count);
         
         SandboxData returnData = new SandboxData(sandboxData, seasonalMods);
         
